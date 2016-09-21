@@ -38,7 +38,12 @@ namespace demi.fmlx.unitTest
 
             if (!string.IsNullOrEmpty(strName) && !string.IsNullOrEmpty(strContent) && intType > 0)
             {
-                _fileManagerLibrary.Register(strName ,strContent ,intType);
+                _fileManagerLibrary.Register(strName, strContent, intType);
+                MessageLbl.Content = "ADD ITEM COMPLETED";
+            }
+            else
+            {
+                MessageLbl.Content = "ADD ITEM FAILED";
             }
         }
 
@@ -49,7 +54,28 @@ namespace demi.fmlx.unitTest
             if (!string.IsNullOrEmpty(strName))
             {
                 _fileManagerLibrary.Deregister(strName);
+                MessageLbl.Content = "DELETE ITEM COMPLETED";
             }
+            else
+            {
+                MessageLbl.Content = "ADD ITEM FAILED";
+            }
+        }
+
+        private void btnFind_Click(object sender, RoutedEventArgs e)
+        {           
+            string strFindElement = string.Empty;
+            strFindElement = _fileManagerLibrary.Retrieve(txtName.Text);
+            Console.WriteLine(strFindElement);
+            MessageLbl.Content = strFindElement;
+        }
+
+        private void btnGetType_Click(object sender, RoutedEventArgs e)
+        {
+            int result = 0;
+            result = _fileManagerLibrary.GetType(txtName.Text);
+            Console.WriteLine(result);
+            MessageLbl.Content = result;
         }
     }
 }

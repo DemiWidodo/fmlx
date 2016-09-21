@@ -42,14 +42,23 @@ namespace demi.fmlx.library.FileManager
         /// <param name="itemType"></param>
         public void Register(string itemName, string itemContent, int itemType)
         {
-            XElement xml = XElement.Load("ItemRepository.xml");
-            xml.AddFirst(new XElement("ItemList",
-                            new XAttribute("Name", itemName),
-                            new XAttribute("Content", itemContent),
-                            new XAttribute("Type", itemType)
-                            ));
-            xml.Save("ItemRepository.xml");
-            Console.WriteLine("Add Item Completed ...!");
+            bool checkItemExist = CheckingExistingElement(itemContent, itemType);
+
+            if (!checkItemExist)
+            {
+                XElement xml = XElement.Load("ItemRepository.xml");
+                xml.AddFirst(new XElement("ItemList",
+                    new XAttribute("Name", itemName),
+                    new XAttribute("Content", itemContent),
+                    new XAttribute("Type", itemType)
+                    ));
+                xml.Save("ItemRepository.xml");
+                Console.WriteLine("Add Item Completed ...!");
+            }
+            else
+            {
+                Console.WriteLine("Add Item Failed ...!");
+            }
         }
 
         /// <summary>
@@ -68,7 +77,7 @@ namespace demi.fmlx.library.FileManager
             dtSet.ReadXml(xmlFile);
 
             dtView = new DataView(dtSet.Tables[0]);
-            dtView.Sort = "ItemName";
+            dtView.Sort = "Name";
             int index = dtView.Find(itemName);
 
             if (index == -1)
@@ -77,10 +86,10 @@ namespace demi.fmlx.library.FileManager
             }
             else
             {
-                Console.WriteLine(dtView[index]["ItemName"].ToString() + " " + dtView[index]["ItemContent"].ToString() + " " + dtView[index]["ItemType"].ToString());
+                Console.WriteLine(dtView[index]["Name"].ToString() + " " + dtView[index]["Content"].ToString() + " " + dtView[index]["Type"].ToString());
 
-                result = dtView[index]["ItemName"].ToString() + " " + dtView[index]["ItemContent"].ToString() + " " +
-                         dtView[index]["ItemType"].ToString();
+                result = dtView[index]["Name"].ToString() + " " + dtView[index]["Content"].ToString() + " " +
+                         dtView[index]["Type"].ToString();
 
             }
 
@@ -95,6 +104,29 @@ namespace demi.fmlx.library.FileManager
         public int GetType(string itemName)
         {
             int result = 0;
+
+            XmlReader xmlFile;
+            xmlFile = XmlReader.Create("ItemRepository.xml", new XmlReaderSettings());
+            DataSet dtSet = new DataSet();
+            DataView dtView;
+            dtSet.ReadXml(xmlFile);
+
+            dtView = new DataView(dtSet.Tables[0]);
+            dtView.Sort = "Name";
+            int index = dtView.Find(itemName);
+
+            if (index == -1)
+            {
+                Console.WriteLine("Item Not Found");
+            }
+            else
+            {
+                Console.WriteLine(dtView[index]["Name"].ToString() + " " + dtView[index]["Content"].ToString() + " " + dtView[index]["Type"].ToString());
+
+                result = Convert.ToInt32(dtView[index]["Type"]);
+
+            }
+
             return result;
         }
 
@@ -150,6 +182,39 @@ namespace demi.fmlx.library.FileManager
             creator.WriteString(itemType.ToString());
             creator.WriteEndElement();
             creator.WriteEndElement();
+        }
+
+        private bool CheckingExistingElement(string itemContent, int itemType)
+        {
+            bool result = false;
+
+            try
+            {
+                //open selected file
+                XDocument xml = XDocument.Load("ItemRepository.xml");
+
+
+                //Find section
+                XElement findElement =
+                    xml.Root.Elements("ItemList").Where(item => item.Attribute("Content").Value == itemContent && item.Attribute("Type").Value == itemType.ToString() ).FirstOrDefault();
+
+                if (findElement == null)
+                {
+                    result = false;
+                    Console.WriteLine("Item not found ...!");
+                }
+                else if (findElement.HasAttributes)
+                {
+                    result = true;
+                    Console.WriteLine("Item found ...!");
+                }
+            }
+            catch (Exception)
+            {
+                
+            }
+
+            return result;
         }
     }
 }
